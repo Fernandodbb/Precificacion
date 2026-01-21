@@ -1,41 +1,32 @@
 # 🚀 Guía de Despliegue a Producción
 
-Para poner tu aplicación "en internet" (Producción) y que puedas acceder desde cualquier lugar o móvil, te recomendamos usar servicios modernos y gratuitos/baratos como **Render** y **Vercel**.
-
-La arquitectura será:
-*   **Backend (Servidor)**: Alojado en Render.com
-*   **Frontend (Web)**: Alojado en Vercel.com
+Para poner tu aplicación "en internet" (Producción) y que puedas acceder desde cualquier lugar o móvil, seguiremos estos pasos:
 
 ---
 
 ## 📦 Paso 1: Preparar tu código (GitHub)
-1.  Asegúrate de que todo tu código está subido a un repositorio de **GitHub**.
-2.  Si no tienes cuenta, crea una y sube la carpeta `Antigravity`.
+1.  Asegúrate de que todo tu código esté subido a un repositorio de **GitHub**.
+2.  Si no tienes cuenta, crea una y sube la carpeta `Antigravity`. El archivo `render.yaml` que he creado debe estar en la raíz del repositorio.
 
 ---
 
 ## ⚙️ Paso 2: Desplegar el Backend (Render)
 1.  Crea una cuenta en [Render.com](https://render.com).
-2.  Haz clic en **"New +"** -> **"Web Service"**.
-3.  Conecta tu repositorio de GitHub.
-4.  Configura los siguientes campos:
-    *   **Root Directory**: `server`
-    *   **Environment**: `Node`
-    *   **Build Command**: `npm install`
-    *   **Start Command**: `npm start`
-5.  **Environment Variables** (Haz clic en "Advanced" o "Environment"):
-    Añade las siguientes variables (copia los valores de tu archivo `.env` local):
-    *   `PORT`: `10000` (Render usa este por defecto, pero es bueno definirlo)
-    *   `GEMINI_API_KEY`: *Tu clave de AI*
-    *   `GOOGLE_SHEET_ID_USUARIOS`: *copia el ID*
-    *   `GOOGLE_SHEET_ID_PRODUCTOS`: *copia el ID*
-    *   `GOOGLE_SHEET_ID_MATERIAS`: *copia el ID*
-    *   `GOOGLE_SHEET_ID_CONTABILIDAD`: *copia el ID*
-    *   `JWT_SECRET`: *inventa una contraseña larga y segura*
-    *   **IMPORTANTE**: Abre tu archivo `server/credentials.json`, copia TODO el contenido (las llaves `{...}`), y crea una variable llamada `GOOGLE_CREDENTIALS_JSON` con ese valor pegado.
-
-6.  Haz clic en **"Create Web Service"**.
-7.  Espera a que se despliegue. Al final te dará una URL (ej: `https://tu-app.onrender.com`). **Copia esa URL**.
+2.  Ve a **"Blueprints"** en el menú superior.
+3.  Haz clic en **"New Blueprint Instance"**.
+4.  Conecta tu repositorio de GitHub.
+5.  Render detectará automáticamente la configuración del archivo `render.yaml`.
+6.  **Environment Variables**:
+    Render te pedirá que rellenes los valores para las siguientes variables (cópialas de tu `.env` o `credentials.json` local):
+    *   `GEMINI_API_KEY`: Tu clave de AI.
+    *   `GOOGLE_SHEET_ID_USUARIOS`: El ID de tu hoja de usuarios.
+    *   `GOOGLE_SHEET_ID_PRODUCTOS`: El ID de tu hoja de productos.
+    *   `GOOGLE_SHEET_ID_MATERIAS`: El ID de tu hoja de materias.
+    *   `GOOGLE_SHEET_ID_CONTABILIDAD`: El ID de tu hoja de contabilidad.
+    *   `GOOGLE_CREDENTIALS_JSON`: Abre tu archivo `server/credentials.json`, copia TODO el contenido (las llaves `{...}`), y pégalo aquí.
+    *   `PAYPAL_CLIENT_ID` y `PAYPAL_CLIENT_SECRET`: Tus claves de PayPal.
+7.  Haz clic en **"Deploy"**.
+8.  Al terminar, ve al servicio `precificacion-api` y copia la URL que te da Render (ej: `https://precificacion-api.onrender.com`).
 
 ---
 
@@ -44,21 +35,19 @@ La arquitectura será:
 2.  Haz clic en **"Add New..."** -> **"Project"**.
 3.  Importa tu repositorio de GitHub.
 4.  Configura el proyecto:
-    *   **Root Directory**: Haz clic en "Edit" y selecciona la carpeta `client`.
-    *   **Framework Preset**: Vite (se debería detectar solo).
+    *   **Root Directory**: Selecciona la carpeta `client`.
+    *   **Framework Preset**: Vite (se detecta solo).
 5.  **Environment Variables**:
-    *   Vercel necesita saber dónde está tu backend.
-    *   Tendrás que modificar tu código frontend para que no apunte a `localhost:5000`.
-    *   *Nota técnica*: Lo ideal es crear una variable de entorno en Vercel `VITE_API_URL` con el valor de tu backend en Render (ej: `https://tu-app.onrender.com`).
-    *   **IMPORTANTE**: De momento, tu código busca `http://localhost:5000` directamente. Para producción, busca en tu código (`client/src`) todas las referencias a `http://localhost:5000` y cámbialas por la URL de Render, O configura la variable de entorno.
-
+    *   Añade una variable llamada `VITE_API_URL`.
+    *   El valor debe ser la URL de tu backend en Render (ej: `https://precificacion-api.onrender.com`). **Asegúrate de que NO termine en barra `/`**.
 6.  Haz clic en **"Deploy"**.
 
 ---
 
-## 🔄 Ajuste Final (CORS)
-Cuando tengas la URL de tu Frontend (ej: `https://tu-app.vercel.app`), ve a Render (Backend):
-1.  Añade una variable de entorno: `FRONTEND_URL` = `https://tu-app.vercel.app`
-2.  Asegúrate de que tu `server/src/config/cors` (si tienes) o `server/index.js` acepte peticiones desde esa URL y no solo localhost.
+## 🔄 Paso 4: Ajuste Final (CORS)
+Cuando tengas la URL de tu Frontend en Vercel (ej: `https://tu-app.vercel.app`):
+1.  Ve a Render -> Selecciona tu servicio de API -> **Environment**.
+2.  Añade la variable: `FRONTEND_URL` = `https://tu-app.vercel.app`
+3.  Guarda los cambios. Render se reiniciará automáticamente.
 
-¡Y ya estaría! 🚀
+¡Y ya estaría! Tu aplicación ya es accesible desde cualquier lugar. 🚀

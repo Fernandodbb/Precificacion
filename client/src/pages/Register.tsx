@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, User, Loader2 } from 'lucide-react';
 
@@ -21,7 +21,7 @@ const Register = () => {
         try {
             // NOTE: In a real app we might want to automatically login after register, 
             // or redirect to login. The backend returns token on register, so we can auto-login.
-            const { data } = await axios.post('http://localhost:5000/api/users/register', {
+            const { data } = await api.post('/api/users/register', {
                 name,
                 email,
                 password,

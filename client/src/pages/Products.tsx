@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { Plus, Edit, Trash2, AlertTriangle, Banknote } from 'lucide-react';
 
 const Products = () => {
@@ -19,8 +19,8 @@ const Products = () => {
     const fetchData = async () => {
         try {
             const [prodRes, matRes] = await Promise.all([
-                axios.get('http://localhost:5000/api/app/products'),
-                axios.get('http://localhost:5000/api/app/materials')
+                api.get('/api/app/products'),
+                api.get('/api/app/materials')
             ]);
             setProducts(prodRes.data);
             setMaterials(matRes.data);
@@ -79,7 +79,7 @@ const Products = () => {
     const handleDelete = async (id: string) => {
         if (!confirm('¿Estás seguro de eliminar este producto?')) return;
         try {
-            await axios.delete(`http://localhost:5000/api/app/products/${id}`);
+            await api.delete(`/api/app/products/${id}`);
             fetchData();
         } catch (error) {
             alert('Error al eliminar producto');
@@ -91,7 +91,7 @@ const Products = () => {
         if (!confirm(`¿Registrar venta de "${product.name}" por €${product.pvp?.toFixed(2)} en Contabilidad?`)) return;
 
         try {
-            await axios.post('http://localhost:5000/api/app/accounting', {
+            await api.post('/api/app/accounting', {
                 type: 'ingreso',
                 concept: `Venta: ${product.name}`,
                 amount: product.pvp,
@@ -116,9 +116,9 @@ const Products = () => {
             };
 
             if (editingId) {
-                await axios.put(`http://localhost:5000/api/app/products/${editingId}`, payload);
+                await api.put(`/api/app/products/${editingId}`, payload);
             } else {
-                await axios.post('http://localhost:5000/api/app/products', payload);
+                await api.post('/api/app/products', payload);
             }
 
             setShowModal(false);
@@ -154,11 +154,11 @@ const Products = () => {
     const estimatedPVP = estimatedCost * (1 + parseFloat(margin) / 100);
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
+        <div className="space-y-10 animate-fade-in">
+            <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Mis Productos</h1>
-                    <p className="text-gray-500">Gestiona tu catálogo y precios</p>
+                    <h1 className="text-4xl font-bold text-white serif tracking-tight">Mis Productos</h1>
+                    <p className="text-gray-400 mt-2 font-medium">Gestiona tu catálogo y optimiza tus márgenes</p>
                 </div>
                 <button
                     onClick={() => {
@@ -166,54 +166,59 @@ const Products = () => {
                         setName(''); setDescription(''); setMargin('50'); setSelectedMaterials([]);
                         setShowModal(true);
                     }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                    className="btn-primary flex items-center space-x-2"
                 >
                     <Plus size={20} />
                     <span>Nuevo Producto</span>
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {products.map(product => (
-                    <div key={product.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4 flex flex-col h-full">
+                    <div key={product.id} className="glass-card rounded-3xl p-8 space-y-6 flex flex-col h-full hover:border-[#8a5cf5]/50 transition-all duration-500 group">
                         <div className="flex justify-between items-start">
-                            <div>
-                                <h3 className="font-bold text-lg text-gray-900">{product.name}</h3>
-                                <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
+                            <div className="space-y-1">
+                                <h3 className="font-bold text-xl text-white serif group-hover:text-[#8a5cf5] transition-colors">{product.name}</h3>
+                                <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{product.description}</p>
                             </div>
-                            <div className="bg-blue-50 text-blue-700 font-bold px-3 py-1 rounded-full text-sm shrink-0 ml-2">
+                            <div className="bg-[#8a5cf5]/10 text-[#8a5cf5] font-bold px-4 py-1.5 rounded-full text-sm shrink-0 border border-[#8a5cf5]/20">
                                 €{product.pvp?.toFixed(2)}
                             </div>
                         </div>
 
-                        <div className="pt-4 border-t border-gray-100 text-sm space-y-2 flex-grow">
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">Coste MP:</span>
-                                <span className="font-medium">€{product.totalCost?.toFixed(2)}</span>
+                        <div className="pt-6 border-t border-white/5 text-sm space-y-3 flex-grow">
+                            <div className="flex justify-between items-center text-gray-400">
+                                <span className="flex items-center space-x-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                                    <span>Coste Materiales</span>
+                                </span>
+                                <span className="font-semibold text-white">€{product.totalCost?.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">Margen:</span>
-                                <span className="font-medium text-green-600">{product.margin}%</span>
+                            <div className="flex justify-between items-center text-gray-400">
+                                <span className="flex items-center space-x-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-green-400"></div>
+                                    <span>Margen de Beneficio</span>
+                                </span>
+                                <span className="font-bold text-green-400">{product.margin}%</span>
                             </div>
                         </div>
 
                         {/* Actions */}
-                        <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
+                        <div className="pt-6 border-t border-white/5 flex justify-between items-center">
                             <button
                                 onClick={() => handleAddToAccounting(product)}
-                                className="text-sm font-medium text-green-600 hover:text-green-800 flex items-center space-x-1"
-                                title="Registrar venta en contabilidad"
+                                className="text-sm font-bold text-[#8a5cf5] hover:text-white flex items-center space-x-2 bg-[#8a5cf5]/5 px-4 py-2 rounded-xl transition-all"
                             >
-                                <Banknote size={16} />
+                                <Banknote size={18} />
                                 <span>Vender</span>
                             </button>
 
                             <div className="flex space-x-2">
-                                <button onClick={() => handleEdit(product)} className="text-gray-400 hover:text-blue-600 p-1.5 hover:bg-blue-50 rounded-lg transition-colors">
-                                    <Edit size={16} />
+                                <button onClick={() => handleEdit(product)} className="text-gray-500 hover:text-white p-2 hover:bg-white/5 rounded-xl transition-all">
+                                    <Edit size={18} />
                                 </button>
-                                <button onClick={() => handleDelete(product.id)} className="text-gray-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition-colors">
-                                    <Trash2 size={16} />
+                                <button onClick={() => handleDelete(product.id)} className="text-gray-500 hover:text-red-400 p-2 hover:bg-red-400/5 rounded-xl transition-all">
+                                    <Trash2 size={18} />
                                 </button>
                             </div>
                         </div>
@@ -223,90 +228,99 @@ const Products = () => {
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6">
-                        <h2 className="text-xl font-bold">{editingId ? 'Editar Producto' : 'Nuevo Producto'}</h2>
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-6">
+                    <div className="bg-[#160c2a]/95 border border-white/10 rounded-[40px] shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-10 space-y-8 custom-scrollbar">
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-bold text-white serif tracking-tight">
+                                {editingId ? 'Editar Producto' : 'Nuevo Producto'}
+                            </h2>
+                            <p className="text-gray-400 text-sm">Define los detalles y materiales para calcular tu precio ideal.</p>
+                        </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">Nombre del Producto</label>
-                                    <input required value={name} onChange={e => setName(e.target.value)} autoComplete="off" className="w-full border p-2 rounded-lg" />
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            <div className="grid grid-cols-1 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Nombre del Producto</label>
+                                    <input required value={name} onChange={e => setName(e.target.value)} autoComplete="off"
+                                        className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-white focus:border-[#8a5cf5] transition-all outline-none" />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">Descripción</label>
-                                    <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full border p-2 rounded-lg h-20" />
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500 ml-1">Descripción</label>
+                                    <textarea value={description} onChange={e => setDescription(e.target.value)}
+                                        className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-white focus:border-[#8a5cf5] transition-all outline-none h-24 resize-none" />
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center">
-                                    <label className="text-sm font-medium">Materias Primas</label>
-                                    <button type="button" onClick={handleAddMaterial} className="text-sm text-blue-600 font-medium hover:underline">+ Añadir Ingrediente</button>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center px-1">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Materias Primas</label>
+                                    <button type="button" onClick={handleAddMaterial}
+                                        className="text-sm text-[#8a5cf5] font-bold hover:text-white transition-colors">+ Añadir Material</button>
                                 </div>
 
-                                {selectedMaterials.map((item, index) => {
-                                    const mat = materials.find(m => m.id === item.id);
-                                    return (
-                                        <div key={index} className="flex items-center space-x-3 bg-gray-50 p-2 rounded-lg">
-                                            <select
-                                                value={item.id}
-                                                onChange={e => handleMaterialChange(index, 'id', e.target.value)}
-                                                className="flex-1 bg-white border p-1 rounded"
-                                            >
-                                                {materials.map(m => (
-                                                    <option key={m.id} value={m.id}>{m.name}</option>
-                                                ))}
-                                            </select>
+                                <div className="space-y-3">
+                                    {selectedMaterials.map((item, index) => {
+                                        const mat = materials.find(m => m.id === item.id);
+                                        return (
+                                            <div key={index} className="flex items-center space-x-4 bg-white/5 p-3 rounded-2xl border border-white/5">
+                                                <select
+                                                    value={item.id}
+                                                    onChange={e => handleMaterialChange(index, 'id', e.target.value)}
+                                                    className="flex-1 bg-transparent text-white border-none focus:ring-0 text-sm cursor-pointer"
+                                                >
+                                                    {materials.map(m => (
+                                                        <option key={m.id} value={m.id} className="bg-[#160c2a] text-white">{m.name}</option>
+                                                    ))}
+                                                </select>
 
-                                            {/* Price Display */}
-                                            <div className="w-24 text-right text-sm text-gray-600 bg-white border border-gray-200 px-2 py-1 rounded">
-                                                €{(Number(mat?.price) || 0).toFixed(2)}
+                                                <div className="text-sm font-bold text-gray-400 min-w-[70px] text-right">
+                                                    €{(Number(mat?.price) || 0).toFixed(2)}
+                                                </div>
+
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={item.quantity}
+                                                    onChange={e => handleMaterialChange(index, 'quantity', e.target.value)}
+                                                    className="w-20 bg-black/20 border border-white/5 p-2 rounded-xl text-white text-center text-sm outline-none focus:border-[#8a5cf5]"
+                                                    placeholder="Cant."
+                                                />
+                                                <span className="text-[10px] font-bold uppercase text-gray-500 w-8">{mat?.unit}</span>
+                                                <button type="button" onClick={() => removeMaterialRow(index)} className="text-gray-500 hover:text-red-400 transition-colors p-1">
+                                                    <Trash2 size={16} />
+                                                </button>
                                             </div>
-
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                value={item.quantity}
-                                                onChange={e => handleMaterialChange(index, 'quantity', e.target.value)}
-                                                className="w-24 border p-1 rounded text-center"
-                                                placeholder="Cant."
-                                            />
-                                            <span className="text-sm text-gray-500 w-8">{mat?.unit}</span>
-                                            <button type="button" onClick={() => removeMaterialRow(index)} className="text-red-500 hover:text-red-700">
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </div>
-                                    )
-                                })}
-                                {selectedMaterials.length === 0 && (
-                                    <p className="text-sm text-gray-400 italic">No hay ingredientes seleccionados.</p>
-                                )}
+                                        )
+                                    })}
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4 bg-blue-50 p-4 rounded-xl">
-                                <div>
-                                    <label className="block text-xs font-semibold uppercase text-blue-800 mb-1">Margen (%)</label>
+                            <div className="grid grid-cols-3 gap-6 bg-[#8a5cf5]/5 p-6 rounded-3xl border border-[#8a5cf5]/10">
+                                <div className="space-y-1">
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#8a5cf5]">Margen (%)</label>
                                     <input
                                         type="number"
                                         value={margin}
                                         onChange={e => setMargin(e.target.value)}
-                                        className="w-full border p-1 rounded"
+                                        className="bg-transparent text-xl font-bold text-white border-none focus:ring-0 p-0 w-full"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-semibold uppercase text-blue-800 mb-1">Coste Total</label>
-                                    <div className="text-lg font-bold text-gray-700">€{estimatedCost.toFixed(2)}</div>
+                                <div className="space-y-1">
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500">Coste Total</label>
+                                    <div className="text-xl font-bold text-white">€{estimatedCost.toFixed(2)}</div>
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-semibold uppercase text-blue-800 mb-1">PVP Sugerido</label>
-                                    <div className="text-2xl font-bold text-blue-700">€{estimatedPVP.toFixed(2)}</div>
+                                <div className="space-y-1">
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#8a5cf5]">PVP Sugerido</label>
+                                    <div className="text-3xl font-bold text-[#8a5cf5] serif">€{estimatedPVP.toFixed(2)}</div>
                                 </div>
                             </div>
 
-                            <div className="flex justify-end space-x-3 pt-4 border-t">
-                                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Cancelar</button>
-                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">{editingId ? 'Actualizar' : 'Guardar Producto'}</button>
+                            <div className="flex justify-end space-x-4 pt-4">
+                                <button type="button" onClick={() => setShowModal(false)}
+                                    className="px-6 py-3 text-gray-400 hover:text-white font-bold transition-all">Cancelar</button>
+                                <button type="submit" className="btn-primary min-w-[160px]">
+                                    {editingId ? 'Actualizar' : 'Guardar Producto'}
+                                </button>
                             </div>
                         </form>
                     </div>

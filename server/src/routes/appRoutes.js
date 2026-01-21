@@ -4,6 +4,10 @@ const { protect, checkSubscription } = require('../middleware/authMiddleware');
 const productService = require('../services/productService');
 const materialService = require('../services/materialService');
 const accountingService = require('../services/accountingService');
+const dashboardController = require('../controllers/dashboardController');
+
+// -- DASHBOARD --
+router.get('/dashboard', protect, dashboardController.getDashboardStats);
 
 // -- PRODUCTS --
 router.get('/products', protect, checkSubscription, async (req, res) => {

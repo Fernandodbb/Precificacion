@@ -19,7 +19,9 @@ app.use(express.json());
 
 app.use('/api/users', authRoutes);
 app.use('/api/app', appRoutes);
+app.use('/api/app', appRoutes);
 app.use('/api/ai', chatRoutes);
+app.use('/api/payment', require('./routes/paymentRoutes'));
 
 // Basic Route
 app.get('/', (req, res) => {

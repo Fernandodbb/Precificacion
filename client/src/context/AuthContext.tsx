@@ -6,6 +6,10 @@ interface User {
     name: string;
     email: string;
     status: string;
+    startDate?: string;
+    endDate?: string;
+    tipo_suscripcion?: string;
+    precio_suscripcion?: string;
 }
 
 interface AuthContextType {
@@ -13,6 +17,7 @@ interface AuthContextType {
     loading: boolean;
     login: (token: string, userData: User) => void;
     logout: () => void;
+    updateUser: (userData: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -30,6 +35,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         }
         setLoading(false);
+
+        // Global Interceptor to handle subscription expiry in real-time
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response?.status === 403 && error.response?.data?.code === 'ERROR_SUB_001') {
+                    console.log('Detectada suscripción expirada en tiempo real. Actualizando estado...');
+                    const updatedUser = {
+                        ...(JSON.parse(localStorage.getItem('user') || '{}')),
+                        status: 'vencido'
+                    };
+                    localStorage.setItem('user', JSON.stringify(updatedUser));
+                    setUser(updatedUser);
+                    // The ProtectedRoute will handle redirection
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
     }, []);
 
     const login = (token: string, userData: User) => {
@@ -37,6 +64,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    };
+
+    const updateUser = (userData: User) => {
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
     };
 
     const logout = () => {
@@ -47,7 +79,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

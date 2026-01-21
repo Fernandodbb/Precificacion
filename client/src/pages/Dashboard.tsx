@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { Package, Boxes, Receipt, TrendingUp } from 'lucide-react';
 
 const StatCard = ({ title, value, icon: Icon, color }: any) => (
@@ -15,20 +15,55 @@ const StatCard = ({ title, value, icon: Icon, color }: any) => (
 );
 
 const Dashboard = () => {
-    // In a real app, we would fetch these stats from an endpoint like /api/app/stats
-    // For now, we mimic empty or basic state
+    const [stats, setStats] = useState({
+        productsSold: 0,
+        balanceMonth: 0,
+        profitability: 0
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const { data } = await api.get('/api/app/dashboard');
+                setStats(data);
+            } catch (error) {
+                console.error('Error fetching dashboard stats:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStats();
+    }, []);
+
     return (
         <div className="space-y-8">
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">Resumen General</h1>
-                <p className="text-gray-500">Vista rápida de tu negocio</p>
+                <p className="text-gray-500">Vista rápida de tu negocio (Mes Actual)</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Productos" value="-" icon={Package} color="bg-blue-500" />
-                <StatCard title="Materias Primas" value="-" icon={Boxes} color="bg-green-500" />
-                <StatCard title="Balance Mes" value="€0.00" icon={Receipt} color="bg-purple-500" />
-                <StatCard title="Rentabilidad" value="0%" icon={TrendingUp} color="bg-orange-500" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <StatCard
+                    title="Productos Vendidos"
+                    value={loading ? '-' : stats.productsSold}
+                    icon={Package}
+                    color="bg-blue-500"
+                />
+                {/* Revenue/Balance Card */}
+                <StatCard
+                    title="Balance del Mes"
+                    value={loading ? '-' : `€${stats.balanceMonth.toFixed(2)}`}
+                    icon={Receipt}
+                    color="bg-purple-500"
+                />
+                {/* Profitability Card - Orange */}
+                <StatCard
+                    title="Rentabilidad %"
+                    value={loading ? '-' : `${stats.profitability}%`}
+                    icon={TrendingUp}
+                    color="bg-orange-500"
+                />
             </div>
 
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center">

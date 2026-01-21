@@ -9,10 +9,18 @@ const protect = async (req, res, next) => {
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            const user = await userService.findUserById(decoded.id);
+            let user = await userService.findUserById(decoded.id);
 
             if (!user) {
                 return res.status(401).json({ message: 'Not authorized, user not found' });
+            }
+
+            // Always check status to ensure 'vencido' is applied eventually
+            const oldStatus = user.status;
+            user = await userService.checkSubscriptionStatus(user);
+
+            if (oldStatus !== user.status) {
+                console.log(`Middleware: Estado de usuario ${user.email} cambió de ${oldStatus} a ${user.status}`);
             }
 
             req.user = user;

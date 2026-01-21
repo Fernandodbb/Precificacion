@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { MessageSquare, X, Send, Bot, User } from 'lucide-react';
 
 const Chatbot = () => {
@@ -29,7 +29,7 @@ const Chatbot = () => {
         setLoading(true);
 
         try {
-            const { data } = await axios.post('http://localhost:5000/api/ai/chat', { message: userMsg });
+            const { data } = await api.post('/api/ai/chat', { message: userMsg });
             setMessages(prev => [...prev, { role: 'bot', text: data.reply }]);
         } catch (error) {
             setMessages(prev => [...prev, { role: 'bot', text: 'Lo siento, tuve un problema conectando con el servidor.' }]);
@@ -39,28 +39,28 @@ const Chatbot = () => {
     };
 
     return (
-        <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end">
+        <div className="fixed bottom-10 right-10 z-50 flex flex-col items-end">
             {/* Chat Window */}
             {isOpen && (
-                <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-96 h-[500px] flex flex-col mb-4 overflow-hidden transition-all animate-in slide-in-from-bottom-10 fade-in duration-300">
+                <div className="bg-[#0b0415]/90 backdrop-blur-3xl rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 w-96 h-[550px] flex flex-col mb-6 overflow-hidden transition-all animate-scale-in origin-bottom-right">
                     {/* Header */}
-                    <div className="bg-blue-600 p-4 flex justify-between items-center text-white">
-                        <div className="flex items-center space-x-2">
-                            <Bot size={20} />
-                            <h3 className="font-bold">Asistente AI</h3>
+                    <div className="bg-gradient-to-r from-[#8a5cf5] to-[#5d3fd3] p-6 flex justify-between items-center text-white">
+                        <div className="flex items-center space-x-3">
+                            <Bot size={22} className="text-white" />
+                            <h3 className="font-bold text-lg serif tracking-tight">Asistente Fiscal</h3>
                         </div>
-                        <button onClick={() => setIsOpen(false)} className="hover:bg-blue-700 p-1 rounded transition-colors">
+                        <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 p-2 rounded-xl transition-all">
                             <X size={20} />
                         </button>
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-black/20">
                         {messages.map((msg, idx) => (
-                            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[80%] rounded-2xl p-3 text-sm ${msg.role === 'user'
-                                        ? 'bg-blue-600 text-white rounded-tr-none'
-                                        : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none shadow-sm'
+                            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
+                                <div className={`max-w-[85%] rounded-[24px] p-4 text-sm leading-relaxed ${msg.role === 'user'
+                                    ? 'bg-[#8a5cf5] text-white rounded-tr-none shadow-lg shadow-purple-500/20'
+                                    : 'bg-white/5 border border-white/10 text-gray-200 rounded-tl-none'
                                     }`}>
                                     {msg.text}
                                 </div>
@@ -68,10 +68,10 @@ const Chatbot = () => {
                         ))}
                         {loading && (
                             <div className="flex justify-start">
-                                <div className="bg-white border border-gray-200 p-3 rounded-2xl rounded-tl-none shadow-sm flex space-x-1">
-                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-75" />
-                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150" />
+                                <div className="bg-white/5 border border-white/10 p-4 rounded-2xl rounded-tl-none flex space-x-1.5 grayscale opacity-50">
+                                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" />
+                                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce delay-75" />
+                                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-bounce delay-150" />
                                 </div>
                             </div>
                         )}
@@ -79,20 +79,20 @@ const Chatbot = () => {
                     </div>
 
                     {/* Input */}
-                    <form onSubmit={handleSend} className="p-4 bg-white border-t border-gray-100 flex space-x-2">
+                    <form onSubmit={handleSend} className="p-6 bg-black/40 border-t border-white/5 flex space-x-3">
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Escribe tu pregunta..."
-                            className="flex-1 border border-gray-200 rounded-full px-4 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
+                            placeholder="Pregunta sobre tus costes..."
+                            className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white focus:outline-none focus:border-[#8a5cf5] transition-all text-sm outline-none"
                         />
                         <button
                             type="submit"
                             disabled={loading || !input.trim()}
-                            className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-[#8a5cf5] hover:bg-[#5d3fd3] text-white p-3.5 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/20 group"
                         >
-                            <Send size={18} />
+                            <Send size={20} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                         </button>
                     </form>
                 </div>
@@ -101,9 +101,9 @@ const Chatbot = () => {
             {/* Toggle Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`${isOpen ? 'bg-gray-700 hover:bg-gray-800' : 'bg-blue-600 hover:bg-blue-700'} text-white p-4 rounded-full shadow-lg transition-all hover:scale-105 flex items-center justify-center`}
+                className={`w-16 h-16 rounded-[22px] shadow-2xl transition-all duration-500 hover:scale-105 flex items-center justify-center ${isOpen ? 'bg-white/10 text-white rotate-90 border border-white/20' : 'bg-gradient-to-br from-[#8a5cf5] to-[#5d3fd3] text-white shadow-purple-500/30'}`}
             >
-                {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
+                {isOpen ? <X size={28} /> : <MessageSquare size={28} />}
             </button>
         </div>
     );

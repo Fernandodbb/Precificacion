@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { Plus, ArrowUpCircle, ArrowDownCircle, Edit, Trash2 } from 'lucide-react';
 
 const Accounting = () => {
@@ -7,6 +7,11 @@ const Accounting = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+
+    // Filters
+    const [dateFilter, setDateFilter] = useState<'month' | 'year' | 'custom'>('month');
+    const [customStartDate, setCustomStartDate] = useState('');
+    const [customEndDate, setCustomEndDate] = useState('');
 
     // Form Data
     const [type, setType] = useState('gasto');
@@ -16,7 +21,7 @@ const Accounting = () => {
 
     const fetchRecords = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/app/accounting');
+            const { data } = await api.get('/api/app/accounting');
             setRecords(data);
         } catch (error) {
             console.error(error);
@@ -28,6 +33,38 @@ const Accounting = () => {
     useEffect(() => {
         fetchRecords();
     }, []);
+
+    // Filter Logic
+    const filteredRecords = records.filter(record => {
+        if (!record.date) return false;
+        const recordDate = new Date(record.date);
+        const now = new Date();
+
+        if (dateFilter === 'month') {
+            return recordDate.getMonth() === now.getMonth() && recordDate.getFullYear() === now.getFullYear();
+        } else if (dateFilter === 'year') {
+            return recordDate.getFullYear() === now.getFullYear();
+        } else if (dateFilter === 'custom' && customStartDate && customEndDate) {
+            const start = new Date(customStartDate);
+            const end = new Date(customEndDate);
+            // Include end date fully
+            end.setHours(23, 59, 59, 999);
+            return recordDate >= start && recordDate <= end;
+        }
+        return true;
+    });
+
+    // Calculations based on filtered records
+    const totalIncome = filteredRecords.filter(r => r.type === 'ingreso').reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+    const totalExpenses = filteredRecords.reduce((acc, curr) => {
+        const expenseAmount = curr.type === 'gasto' ? (curr.amount || 0) : 0;
+        const materialCost = curr.materialCost || 0;
+        return acc + expenseAmount + materialCost;
+    }, 0);
+
+    const balance = totalIncome - totalExpenses;
+
 
     const handleEdit = (record: any) => {
         setType(record.type);
@@ -41,7 +78,7 @@ const Accounting = () => {
     const handleDelete = async (id: string) => {
         if (!confirm('¿Seguro que quieres borrar este movimiento?')) return;
         try {
-            await axios.delete(`http://localhost:5000/api/app/accounting/${id}`);
+            await api.delete(`/api/app/accounting/${id}`);
             fetchRecords();
         } catch (error) {
             alert('Error al borrar');
@@ -52,7 +89,7 @@ const Accounting = () => {
         e.preventDefault();
         try {
             const payload = {
-                date: new Date().toISOString().split('T')[0], // Keep simpler date
+                date: new Date().toISOString().split('T')[0],
                 concept,
                 type,
                 category,
@@ -60,11 +97,9 @@ const Accounting = () => {
             };
 
             if (editingId) {
-                // Preserve original date if desired, or update. For now updating date is fine or simple override.
-                // Let's attach editingId to url
-                await axios.put(`http://localhost:5000/api/app/accounting/${editingId}`, payload);
+                await api.put(`/api/app/accounting/${editingId}`, payload);
             } else {
-                await axios.post('http://localhost:5000/api/app/accounting', payload);
+                await api.post('/api/app/accounting', payload);
             }
 
             setShowModal(false);
@@ -77,93 +112,133 @@ const Accounting = () => {
 
     if (loading) return <div>Cargando...</div>;
 
-    const totalIncome = records.filter(r => r.type === 'ingreso').reduce((acc, curr) => acc + (curr.amount || 0), 0);
-
-    // Total Expenses = Explicit Expenses + Material Costs (Cost of Goods Sold/COGS) attached to Incomes
-    const totalExpenses = records.reduce((acc, curr) => {
-        const expenseAmount = curr.type === 'gasto' ? (curr.amount || 0) : 0;
-        const materialCost = curr.materialCost || 0;
-        return acc + expenseAmount + materialCost;
-    }, 0);
-
-    const balance = totalIncome - totalExpenses;
-
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
+        <div className="space-y-10 animate-fade-in">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Contabilidad</h1>
-                    <p className="text-gray-500">Ingresos y gastos</p>
+                    <h1 className="text-4xl font-bold text-white serif tracking-tight">Contabilidad</h1>
+                    <p className="text-gray-400 mt-2 font-medium">Controla tus beneficios y flujo de caja en tiempo real</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setEditingId(null);
-                        setConcept(''); setAmount(''); setCategory(''); setType('gasto');
-                        setShowModal(true);
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-                >
-                    <Plus size={20} />
-                    <span>Nuevo Movimiento</span>
-                </button>
+
+                <div className="flex flex-wrap items-center gap-4">
+                    {/* Filter Controls */}
+                    <div className="bg-white/5 p-1.5 rounded-2xl border border-white/10 flex items-center backdrop-blur-md">
+                        <button
+                            onClick={() => setDateFilter('month')}
+                            className={`px-5 py-2 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all ${dateFilter === 'month' ? 'bg-[#8a5cf5] text-white shadow-lg shadow-purple-500/30' : 'text-gray-500 hover:text-white'}`}
+                        >
+                            Mes
+                        </button>
+                        <button
+                            onClick={() => setDateFilter('year')}
+                            className={`px-5 py-2 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all ${dateFilter === 'year' ? 'bg-[#8a5cf5] text-white shadow-lg shadow-purple-500/30' : 'text-gray-500 hover:text-white'}`}
+                        >
+                            Año
+                        </button>
+                        <button
+                            onClick={() => setDateFilter('custom')}
+                            className={`px-5 py-2 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all ${dateFilter === 'custom' ? 'bg-[#8a5cf5] text-white shadow-lg shadow-purple-500/30' : 'text-gray-500 hover:text-white'}`}
+                        >
+                            Rango
+                        </button>
+                    </div>
+
+                    {dateFilter === 'custom' && (
+                        <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/10 backdrop-blur-md">
+                            <input
+                                type="date"
+                                value={customStartDate}
+                                onChange={(e) => setCustomStartDate(e.target.value)}
+                                className="bg-transparent text-sm text-white border-none focus:ring-0 p-0"
+                            />
+                            <span className="text-gray-600 font-bold">-</span>
+                            <input
+                                type="date"
+                                value={customEndDate}
+                                onChange={(e) => setCustomEndDate(e.target.value)}
+                                className="bg-transparent text-sm text-white border-none focus:ring-0 p-0"
+                            />
+                        </div>
+                    )}
+
+                    <button
+                        onClick={() => {
+                            setEditingId(null);
+                            setConcept(''); setAmount(''); setCategory(''); setType('gasto');
+                            setShowModal(true);
+                        }}
+                        className="btn-primary flex items-center space-x-2"
+                    >
+                        <Plus size={20} />
+                        <span>Nuevo Registro</span>
+                    </button>
+                </div>
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-3 gap-4">
-                <div className="bg-green-50 p-4 rounded-xl border border-green-100">
-                    <p className="text-sm text-green-600 font-semibold uppercase">Total Ingresos</p>
-                    <p className="text-2xl font-bold text-green-700">+€{totalIncome.toFixed(2)}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="glass-card rounded-3xl p-6 border-l-4 border-l-green-400">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Ingresos</p>
+                    <p className="text-2xl font-bold text-green-400">+€{totalIncome.toFixed(2)}</p>
                 </div>
-                <div className="bg-red-50 p-4 rounded-xl border border-red-100">
-                    <p className="text-sm text-red-600 font-semibold uppercase">Total Gastos (incl. MP)</p>
-                    <p className="text-2xl font-bold text-red-700">-€{totalExpenses.toFixed(2)}</p>
+                <div className="glass-card rounded-3xl p-6 border-l-4 border-l-red-400">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Gastos</p>
+                    <p className="text-2xl font-bold text-red-400">-€{totalExpenses.toFixed(2)}</p>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-200">
-                    <p className="text-sm text-gray-500 font-semibold uppercase">Balance Neto</p>
-                    <p className={`text-2xl font-bold ${balance >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
+                <div className="glass-card rounded-3xl p-6 border-l-4 border-l-purple-400">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Balance Neto</p>
+                    <p className={`text-2xl font-bold ${balance >= 0 ? 'text-white' : 'text-red-400'}`}>
                         €{balance.toFixed(2)}
+                    </p>
+                </div>
+                <div className="glass-card rounded-3xl p-6 border-l-4 border-l-blue-400">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Rentabilidad</p>
+                    <p className="text-2xl font-bold text-blue-400">
+                        {totalExpenses > 0 ? ((balance / totalExpenses) * 100).toFixed(2) : '0.00'}%
                     </p>
                 </div>
             </div>
 
             {/* List */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="glass-card rounded-[32px] overflow-hidden border border-white/5 shadow-2xl">
                 <table className="w-full text-left">
-                    <thead className="bg-gray-50 text-gray-500 font-medium text-sm">
+                    <thead className="bg-white/[0.02] text-gray-500 font-bold text-[10px] uppercase tracking-widest border-b border-white/5">
                         <tr>
-                            <th className="px-6 py-4">Fecha</th>
-                            <th className="px-6 py-4">Concepto</th>
-                            <th className="px-6 py-4">Categoría</th>
-                            <th className="px-6 py-4 text-center">Coste MP</th>
-                            <th className="px-6 py-4 text-right">Importe</th>
-                            <th className="px-6 py-4 text-right">Acciones</th>
+                            <th className="px-8 py-6">Fecha</th>
+                            <th className="px-8 py-6">Concepto</th>
+                            <th className="px-8 py-6">Categoría</th>
+                            <th className="px-8 py-6 text-center text-gray-600">Coste MP</th>
+                            <th className="px-8 py-6 text-right">Importe</th>
+                            <th className="px-8 py-6 text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {records.map((record) => (
-                            <tr key={record.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 text-gray-500 text-sm">
+                    <tbody className="divide-y divide-white/[0.03]">
+                        {filteredRecords.map((record) => (
+                            <tr key={record.id} className="hover:bg-white/[0.02] transition-colors group">
+                                <td className="px-8 py-6 text-gray-500 text-sm font-medium">
                                     {record.date?.split('T')[0] || '-'}
                                 </td>
-                                <td className="px-6 py-4 font-medium text-gray-900 flex items-center space-x-2">
-                                    {record.type === 'ingreso' ? <ArrowUpCircle size={16} className="text-green-500" /> : <ArrowDownCircle size={16} className="text-red-500" />}
+                                <td className="px-8 py-6 font-bold text-white flex items-center space-x-3 group-hover:text-[#8a5cf5] transition-colors">
+                                    <div className={`p-1.5 rounded-lg ${record.type === 'ingreso' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                                        {record.type === 'ingreso' ? <ArrowUpCircle size={16} /> : <ArrowDownCircle size={16} />}
+                                    </div>
                                     <span>{record.concept}</span>
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-500">
-                                    <span className="bg-gray-100 px-2 py-1 rounded text-xs">{record.category || 'General'}</span>
+                                <td className="px-8 py-6">
+                                    <span className="bg-white/5 text-gray-400 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">{record.category || 'General'}</span>
                                 </td>
-                                <td className="px-6 py-4 text-center text-sm text-gray-400">
+                                <td className="px-8 py-6 text-center text-sm text-gray-600 font-medium">
                                     {record.materialCost ? `-€${record.materialCost.toFixed(2)}` : '-'}
                                 </td>
-                                <td className={`px-6 py-4 text-right font-bold ${record.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
+                                <td className={`px-8 py-6 text-right font-bold text-lg ${record.type === 'ingreso' ? 'text-green-400' : 'text-red-400'}`}>
                                     {record.type === 'ingreso' ? '+' : '-'}€{record.amount?.toFixed(2)}
                                 </td>
-                                <td className="px-6 py-4 text-right">
+                                <td className="px-8 py-6">
                                     <div className="flex justify-end space-x-2">
-                                        <button onClick={() => handleEdit(record)} className="text-gray-400 hover:text-blue-600 p-1">
+                                        <button onClick={() => handleEdit(record)} className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                                             <Edit size={16} />
                                         </button>
-                                        <button onClick={() => handleDelete(record.id)} className="text-gray-400 hover:text-red-600 p-1">
+                                        <button onClick={() => handleDelete(record.id)} className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-400/5 rounded-xl transition-all">
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
@@ -176,40 +251,52 @@ const Accounting = () => {
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
-                        <h2 className="text-xl font-bold">{editingId ? 'Editar Movimiento' : 'Registrar Movimiento'}</h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="flex bg-gray-100 p-1 rounded-lg">
-                                <button type="button" onClick={() => setType('ingreso')} className={`flex-1 py-1 text-sm font-medium rounded-md transition-colors ${type === 'ingreso' ? 'bg-white shadow text-green-600' : 'text-gray-500'}`}>Ingreso</button>
-                                <button type="button" onClick={() => setType('gasto')} className={`flex-1 py-1 text-sm font-medium rounded-md transition-colors ${type === 'gasto' ? 'bg-white shadow text-red-600' : 'text-gray-500'}`}>Gasto</button>
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-6">
+                    <div className="bg-[#160c2a]/95 border border-white/10 rounded-[40px] shadow-2xl max-w-md w-full p-10 space-y-8">
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-bold text-white serif tracking-tight">
+                                {editingId ? 'Editar Movimiento' : 'Nuevo Registro'}
+                            </h2>
+                            <p className="text-gray-400 text-sm">Gestiona tus entradas y salidas de dinero fácilmente.</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/10">
+                                <button type="button" onClick={() => setType('ingreso')}
+                                    className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all ${type === 'ingreso' ? 'bg-green-500/20 text-green-400' : 'text-gray-500'}`}>Ingreso</button>
+                                <button type="button" onClick={() => setType('gasto')}
+                                    className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all ${type === 'gasto' ? 'bg-red-500/20 text-red-400' : 'text-gray-500'}`}>Gasto</button>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Concepto</label>
-                                <input required value={concept} onChange={e => setConcept(e.target.value)} className="w-full border p-2 rounded-lg" />
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">Concepto</label>
+                                <input required value={concept} onChange={e => setConcept(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-white focus:border-[#8a5cf5] transition-all outline-none" />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Importe (€)</label>
-                                <input type="number" step="0.01" required value={amount} onChange={e => setAmount(e.target.value)} className="w-full border p-2 rounded-lg" />
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">Importe (€)</label>
+                                <input type="number" step="0.01" required value={amount} onChange={e => setAmount(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-white focus:border-[#8a5cf5] transition-all outline-none" />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Categoría</label>
-                                <select value={category} onChange={e => setCategory(e.target.value)} className="w-full border p-2 rounded-lg">
-                                    <option value="">Seleccionar...</option>
-                                    <option value="Ventas">Ventas</option>
-                                    <option value="Compra Material">Compra Material</option>
-                                    <option value="Servicios">Servicios</option>
-                                    <option value="Impuestos">Impuestos</option>
-                                    <option value="Otro">Otro</option>
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">Categoría</label>
+                                <select value={category} onChange={e => setCategory(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 p-4 rounded-2xl text-white focus:border-[#8a5cf5] transition-all outline-none cursor-pointer">
+                                    <option value="" className="bg-[#160c2a]">Seleccionar...</option>
+                                    <option value="Ventas" className="bg-[#160c2a]">Ventas</option>
+                                    <option value="Compra Material" className="bg-[#160c2a]">Compra Material</option>
+                                    <option value="Servicios" className="bg-[#160c2a]">Servicios</option>
+                                    <option value="Impuestos" className="bg-[#160c2a]">Impuestos</option>
+                                    <option value="Otro" className="bg-[#160c2a]">Otro</option>
                                 </select>
                             </div>
 
-                            <div className="flex justify-end space-x-3 pt-4">
-                                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">Cancelar</button>
-                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">{editingId ? 'Actualizar' : 'Guardar'}</button>
+                            <div className="flex justify-end space-x-4 pt-4">
+                                <button type="button" onClick={() => setShowModal(false)}
+                                    className="px-6 py-3 text-gray-400 hover:text-white font-bold transition-all">Cancelar</button>
+                                <button type="submit" className="btn-primary flex-1">{editingId ? 'Actualizar' : 'Registrar'}</button>
                             </div>
                         </form>
                     </div>
