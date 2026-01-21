@@ -17,7 +17,8 @@ const getAuth = () => {
                 scopes: SCOPES,
             });
         } catch (error) {
-            console.error('Error parsing GOOGLE_CREDENTIALS_JSON:', error);
+            console.error('Error parsing GOOGLE_CREDENTIALS_JSON:', error.message);
+            throw new Error(`Invalid GOOGLE_CREDENTIALS_JSON: ${error.message}`);
         }
     }
 
