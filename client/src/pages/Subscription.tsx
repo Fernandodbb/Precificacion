@@ -30,10 +30,10 @@ const Subscription = () => {
     };
 
     return (
-        <div className="max-w-5xl mx-auto space-y-12 py-12 px-6 animate-fade-in">
-            <div className="text-center space-y-3">
-                <h1 className="text-4xl font-bold text-white serif tracking-tight">Mi Suscripción</h1>
-                <p className="text-gray-400 font-medium max-w-md mx-auto">Gestiona tu plan y accede a todas las herramientas de optimización</p>
+        <div className="max-w-5xl mx-auto space-y-8 sm:space-y-12 py-6 sm:py-12 px-4 sm:px-6 animate-fade-in">
+            <div className="text-center space-y-2 sm:space-y-3">
+                <h1 className="text-2xl sm:text-4xl font-bold text-white serif tracking-tight">Mi Suscripción</h1>
+                <p className="text-gray-400 font-medium text-sm sm:base max-w-md mx-auto">Gestiona tu plan y accede a todas las herramientas de optimización</p>
             </div>
 
             {message && (
@@ -42,17 +42,17 @@ const Subscription = () => {
                 </div>
             )}
 
-            <div className="grid md:grid-cols-2 gap-10 items-stretch">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 items-stretch">
                 {/* Current Status Card */}
-                <div className="glass-card rounded-[40px] overflow-hidden flex flex-col border border-white/5 relative group">
-                    <div className={`p-10 text-white relative overflow-hidden ${isExpired ? 'bg-gradient-to-br from-red-500/20 to-orange-500/20' : 'bg-gradient-to-br from-[#8a5cf5]/20 to-[#5d3fd3]/20'}`}>
+                <div className="glass-card rounded-3xl sm:rounded-[40px] overflow-hidden flex flex-col border border-white/5 relative group">
+                    <div className={`p-6 sm:p-10 text-white relative overflow-hidden ${isExpired ? 'bg-gradient-to-br from-red-500/20 to-orange-500/20' : 'bg-gradient-to-br from-[#8a5cf5]/20 to-[#5d3fd3]/20'}`}>
                         {/* Decorative background glow */}
                         <div className={`absolute top-0 right-0 w-32 h-32 blur-3xl rounded-full opacity-20 ${isExpired ? 'bg-red-500' : 'bg-purple-500'}`}></div>
 
                         <div className="flex justify-between items-start relative z-10">
                             <div className="space-y-1">
                                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Estado Actual</p>
-                                <h2 className="text-3xl font-bold serif">
+                                <h2 className="text-2xl sm:text-3xl font-bold serif">
                                     {isExpired ? 'Plan Vencido' : (user?.tipo_suscripcion ? (user.tipo_suscripcion.charAt(0).toUpperCase() + user.tipo_suscripcion.slice(1)) : 'Pro')}
                                     {!isExpired && user?.status === 'prueba' ? ' (Prueba)' : ''}
                                 </h2>
@@ -63,16 +63,16 @@ const Subscription = () => {
                         </div>
                     </div>
 
-                    <div className="p-10 space-y-8 flex-1 flex flex-col justify-center relative z-10">
-                        <div className="flex items-center space-x-6">
-                            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500 ${daysRemaining > 0 ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                                {isExpired ? <ShieldAlert size={32} /> : <Calendar size={32} />}
+                    <div className="p-6 sm:p-10 space-y-6 sm:space-y-8 flex-1 flex flex-col justify-center relative z-10">
+                        <div className="flex items-center space-x-4 sm:space-x-6">
+                            <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-500 shrink-0 ${daysRemaining > 0 ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                                {isExpired ? <ShieldAlert size={24} className="sm:w-8 sm:h-8" /> : <Calendar size={24} className="sm:w-8 sm:h-8" />}
                             </div>
                             <div className="space-y-1">
-                                <p className="font-bold text-white text-lg">
+                                <p className="font-bold text-white text-base sm:text-lg">
                                     {isExpired ? 'Suscripción Finalizada' : (user?.status === 'prueba' ? 'Periodo de Prueba' : 'Suscripción Activa')}
                                 </p>
-                                <p className="text-gray-400 text-sm leading-relaxed">
+                                <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">
                                     {daysRemaining > 0
                                         ? `Le quedan ${daysRemaining} días de acceso premium.`
                                         : 'Tu periodo ha finalizado. Renueva para continuar escalando tu negocio.'}
@@ -92,10 +92,10 @@ const Subscription = () => {
                 </div>
 
                 {/* Renewal / Upgrade Card */}
-                <div className="glass-card rounded-[40px] overflow-hidden flex flex-col border border-[#8a5cf5]/20 shadow-2xl shadow-purple-500/5 items-center">
-                    <div className="p-10 flex-1 w-full space-y-8">
+                <div className="glass-card rounded-3xl sm:rounded-[40px] overflow-hidden flex flex-col border border-[#8a5cf5]/20 shadow-2xl shadow-purple-500/5 items-center">
+                    <div className="p-6 sm:p-10 flex-1 w-full space-y-6 sm:space-y-8">
                         <div className="space-y-1">
-                            <h3 className="text-2xl font-bold text-white serif tracking-tight">Potencia tu Negocio</h3>
+                            <h3 className="text-xl sm:text-2xl font-bold text-white serif tracking-tight">Potencia tu Negocio</h3>
                             <p className="text-gray-400 text-sm">Elige el plan que mejor se adapte a tu ritmo de crecimiento.</p>
                         </div>
 
@@ -115,12 +115,12 @@ const Subscription = () => {
                             </button>
                         </div>
 
-                        <div className="text-center py-4">
+                        <div className="text-center py-2 sm:py-4">
                             <div className="flex items-center justify-center space-x-2">
-                                <span className="text-5xl font-bold text-white serif px-2">
+                                <span className="text-4xl sm:text-5xl font-bold text-white serif px-2">
                                     {billingCycle === 'mensual' ? `${monthlyPrice}€` : `${calculateYearlyPrice()}€`}
                                 </span>
-                                <span className="text-gray-500 font-bold uppercase text-[10px] tracking-widest">/ {billingCycle === 'mensual' ? 'mes' : 'año'}</span>
+                                <span className="text-gray-500 font-bold uppercase text-[9px] sm:text-[10px] tracking-widest">/ {billingCycle === 'mensual' ? 'mes' : 'año'}</span>
                             </div>
                         </div>
 

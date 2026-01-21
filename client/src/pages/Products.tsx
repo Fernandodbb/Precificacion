@@ -154,11 +154,11 @@ const Products = () => {
     const estimatedPVP = estimatedCost * (1 + parseFloat(margin) / 100);
 
     return (
-        <div className="space-y-10 animate-fade-in">
-            <div className="flex justify-between items-end">
+        <div className="space-y-6 lg:space-y-10 animate-fade-in">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 sm:gap-0">
                 <div>
-                    <h1 className="text-4xl font-bold text-white serif tracking-tight">Mis Productos</h1>
-                    <p className="text-gray-400 mt-2 font-medium">Gestiona tu catálogo y optimiza tus márgenes</p>
+                    <h1 className="text-2xl sm:text-4xl font-bold text-white serif tracking-tight">Mis Productos</h1>
+                    <p className="text-gray-400 mt-1 sm:mt-2 font-medium text-sm sm:base">Gestiona tu catálogo y optimiza tus márgenes</p>
                 </div>
                 <button
                     onClick={() => {
@@ -166,20 +166,20 @@ const Products = () => {
                         setName(''); setDescription(''); setMargin('50'); setSelectedMaterials([]);
                         setShowModal(true);
                     }}
-                    className="btn-primary flex items-center space-x-2"
+                    className="btn-primary flex items-center space-x-2 w-full sm:w-auto justify-center py-3 sm:py-2"
                 >
                     <Plus size={20} />
                     <span>Nuevo Producto</span>
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {products.map(product => (
-                    <div key={product.id} className="glass-card rounded-3xl p-8 space-y-6 flex flex-col h-full hover:border-[#8a5cf5]/50 transition-all duration-500 group">
+                    <div key={product.id} className="glass-card rounded-2xl sm:rounded-3xl p-6 sm:p-8 space-y-4 sm:space-y-6 flex flex-col h-full hover:border-[#8a5cf5]/50 transition-all duration-500 group">
                         <div className="flex justify-between items-start">
                             <div className="space-y-1">
-                                <h3 className="font-bold text-xl text-white serif group-hover:text-[#8a5cf5] transition-colors">{product.name}</h3>
-                                <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{product.description}</p>
+                                <h3 className="font-bold text-lg sm:text-xl text-white serif group-hover:text-[#8a5cf5] transition-colors">{product.name}</h3>
+                                <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 leading-relaxed">{product.description}</p>
                             </div>
                             <div className="bg-[#8a5cf5]/10 text-[#8a5cf5] font-bold px-4 py-1.5 rounded-full text-sm shrink-0 border border-[#8a5cf5]/20">
                                 €{product.pvp?.toFixed(2)}
@@ -228,10 +228,10 @@ const Products = () => {
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-6">
-                    <div className="bg-[#160c2a]/95 border border-white/10 rounded-[40px] shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-10 space-y-8 custom-scrollbar">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 sm:p-6">
+                    <div className="bg-[#160c2a]/95 border border-white/10 rounded-3xl sm:rounded-[40px] shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-10 space-y-6 sm:space-y-8 custom-scrollbar">
                         <div className="space-y-2">
-                            <h2 className="text-3xl font-bold text-white serif tracking-tight">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-white serif tracking-tight">
                                 {editingId ? 'Editar Producto' : 'Nuevo Producto'}
                             </h2>
                             <p className="text-gray-400 text-sm">Define los detalles y materiales para calcular tu precio ideal.</p>
@@ -262,56 +262,63 @@ const Products = () => {
                                     {selectedMaterials.map((item, index) => {
                                         const mat = materials.find(m => m.id === item.id);
                                         return (
-                                            <div key={index} className="flex items-center space-x-4 bg-white/5 p-3 rounded-2xl border border-white/5">
-                                                <select
-                                                    value={item.id}
-                                                    onChange={e => handleMaterialChange(index, 'id', e.target.value)}
-                                                    className="flex-1 bg-transparent text-white border-none focus:ring-0 text-sm cursor-pointer"
-                                                >
-                                                    {materials.map(m => (
-                                                        <option key={m.id} value={m.id} className="bg-[#160c2a] text-white">{m.name}</option>
-                                                    ))}
-                                                </select>
-
-                                                <div className="text-sm font-bold text-gray-400 min-w-[70px] text-right">
-                                                    €{(Number(mat?.price) || 0).toFixed(2)}
+                                            <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+                                                <div className="flex-1 w-full">
+                                                    <select
+                                                        value={item.id}
+                                                        onChange={e => handleMaterialChange(index, 'id', e.target.value)}
+                                                        className="w-full bg-transparent text-white border-none focus:ring-0 text-sm cursor-pointer"
+                                                    >
+                                                        {materials.map(m => (
+                                                            <option key={m.id} value={m.id} className="bg-[#160c2a] text-white">{m.name}</option>
+                                                        ))}
+                                                    </select>
                                                 </div>
 
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    value={item.quantity}
-                                                    onChange={e => handleMaterialChange(index, 'quantity', e.target.value)}
-                                                    className="w-20 bg-black/20 border border-white/5 p-2 rounded-xl text-white text-center text-sm outline-none focus:border-[#8a5cf5]"
-                                                    placeholder="Cant."
-                                                />
-                                                <span className="text-[10px] font-bold uppercase text-gray-500 w-8">{mat?.unit}</span>
-                                                <button type="button" onClick={() => removeMaterialRow(index)} className="text-gray-500 hover:text-red-400 transition-colors p-1">
-                                                    <Trash2 size={16} />
-                                                </button>
+                                                <div className="flex items-center justify-between w-full sm:w-auto sm:space-x-4">
+                                                    <div className="text-sm font-bold text-gray-400 min-w-[70px]">
+                                                        €{(Number(mat?.price) || 0).toFixed(2)}
+                                                    </div>
+
+                                                    <div className="flex items-center space-x-2">
+                                                        <input
+                                                            type="number"
+                                                            step="0.01"
+                                                            value={item.quantity}
+                                                            onChange={e => handleMaterialChange(index, 'quantity', e.target.value)}
+                                                            className="w-16 sm:w-20 bg-black/20 border border-white/5 p-2 rounded-xl text-white text-center text-sm outline-none focus:border-[#8a5cf5]"
+                                                            placeholder="Cant."
+                                                        />
+                                                        <span className="text-[10px] font-bold uppercase text-gray-500 w-8">{mat?.unit}</span>
+                                                    </div>
+
+                                                    <button type="button" onClick={() => removeMaterialRow(index)} className="text-gray-500 hover:text-red-400 transition-colors p-1">
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
                                             </div>
                                         )
                                     })}
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-6 bg-[#8a5cf5]/5 p-6 rounded-3xl border border-[#8a5cf5]/10">
-                                <div className="space-y-1">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 bg-[#8a5cf5]/5 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-[#8a5cf5]/10">
+                                <div className="space-y-1 flex sm:block justify-between items-center sm:justify-start">
                                     <label className="block text-[10px] font-bold uppercase tracking-widest text-[#8a5cf5]">Margen (%)</label>
                                     <input
                                         type="number"
                                         value={margin}
                                         onChange={e => setMargin(e.target.value)}
-                                        className="bg-transparent text-xl font-bold text-white border-none focus:ring-0 p-0 w-full"
+                                        className="bg-transparent text-lg sm:text-xl font-bold text-white border-none focus:ring-0 p-0 w-20 sm:w-full text-right sm:text-left"
                                     />
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-1 flex sm:block justify-between items-center sm:justify-start">
                                     <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500">Coste Total</label>
-                                    <div className="text-xl font-bold text-white">€{estimatedCost.toFixed(2)}</div>
+                                    <div className="text-lg sm:text-xl font-bold text-white">€{estimatedCost.toFixed(2)}</div>
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-1 flex sm:block justify-between items-center sm:justify-start border-t border-[#8a5cf5]/10 pt-3 sm:pt-0 sm:border-0">
                                     <label className="block text-[10px] font-bold uppercase tracking-widest text-[#8a5cf5]">PVP Sugerido</label>
-                                    <div className="text-3xl font-bold text-[#8a5cf5] serif">€{estimatedPVP.toFixed(2)}</div>
+                                    <div className="text-2xl sm:text-3xl font-bold text-[#8a5cf5] serif">€{estimatedPVP.toFixed(2)}</div>
                                 </div>
                             </div>
 

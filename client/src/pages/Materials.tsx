@@ -88,11 +88,11 @@ const Materials = () => {
     if (loading) return <div>Cargando...</div>;
 
     return (
-        <div className="space-y-10 animate-fade-in">
-            <div className="flex justify-between items-end">
+        <div className="space-y-6 lg:space-y-10 animate-fade-in">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 sm:gap-0">
                 <div>
-                    <h1 className="text-4xl font-bold text-white serif tracking-tight">Materias Primas</h1>
-                    <p className="text-gray-400 mt-2 font-medium">Gestiona el stock y precios de tus materiales</p>
+                    <h1 className="text-2xl sm:text-4xl font-bold text-white serif tracking-tight">Materias Primas</h1>
+                    <p className="text-gray-400 mt-1 sm:mt-2 font-medium text-sm sm:base">Gestiona el stock y precios de tus materiales</p>
                 </div>
                 <button
                     onClick={() => {
@@ -100,43 +100,43 @@ const Materials = () => {
                         setFormData({ name: '', unit: 'units', price: '', provider: '', stock: '0', minStock: '5' });
                         setShowModal(true);
                     }}
-                    className="btn-primary flex items-center space-x-2"
+                    className="btn-primary flex items-center space-x-2 w-full sm:w-auto justify-center py-3 sm:py-2"
                 >
                     <Plus size={20} />
                     <span>Nueva Materia Prima</span>
                 </button>
             </div>
 
-            <div className="glass-card rounded-[32px] overflow-hidden border border-white/5 shadow-2xl">
-                <table className="w-full text-left">
+            <div className="glass-card rounded-2xl sm:rounded-[32px] overflow-hidden border border-white/5 shadow-2xl overflow-x-auto custom-scrollbar">
+                <table className="w-full text-left min-w-[600px] sm:min-w-0">
                     <thead className="bg-white/[0.02] text-gray-500 font-bold text-[10px] uppercase tracking-widest border-b border-white/5">
                         <tr>
-                            <th className="px-8 py-6">Nombre</th>
-                            <th className="px-8 py-6">Precio / Unidad</th>
-                            <th className="px-8 py-6">Proveedor</th>
-                            <th className="px-8 py-6 text-right">Acciones</th>
+                            <th className="px-6 sm:px-8 py-4 sm:py-6">Nombre</th>
+                            <th className="px-6 sm:px-8 py-4 sm:py-6">Precio / Unidad</th>
+                            <th className="px-6 sm:px-8 py-4 sm:py-6">Proveedor</th>
+                            <th className="px-6 sm:px-8 py-4 sm:py-6 text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.03]">
                         {materials.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="px-8 py-12 text-center text-gray-500 italic">
+                                <td colSpan={4} className="px-6 sm:px-8 py-10 sm:py-12 text-center text-gray-500 italic">
                                     No hay materias primas registradas.
                                 </td>
                             </tr>
                         ) : (
                             materials.map((item) => (
                                 <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
-                                    <td className="px-8 py-6 font-bold text-white group-hover:text-[#8a5cf5] transition-colors">{item.name}</td>
-                                    <td className="px-8 py-6 text-gray-300">
+                                    <td className="px-6 sm:px-8 py-4 sm:py-6 font-bold text-white group-hover:text-[#8a5cf5] transition-colors">{item.name}</td>
+                                    <td className="px-6 sm:px-8 py-4 sm:py-6 text-gray-300">
                                         <span className="font-bold text-white">€{Number(item.price).toFixed(2)}</span> / {item.unit}
                                     </td>
-                                    <td className="px-8 py-6 text-gray-500">{item.provider || '-'}</td>
-                                    <td className="px-8 py-6 flex justify-end space-x-3">
-                                        <button onClick={() => handleEdit(item)} className="p-2.5 text-gray-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                                    <td className="px-6 sm:px-8 py-4 sm:py-6 text-gray-500">{item.provider || '-'}</td>
+                                    <td className="px-6 sm:px-8 py-4 sm:py-6 flex justify-end space-x-2 sm:space-x-3">
+                                        <button onClick={() => handleEdit(item)} className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                                             <Edit size={18} />
                                         </button>
-                                        <button onClick={() => handleDelete(item.id)} className="p-2.5 text-gray-500 hover:text-red-400 hover:bg-red-400/5 rounded-xl transition-all">
+                                        <button onClick={() => handleDelete(item.id)} className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-400/5 rounded-xl transition-all">
                                             <Trash2 size={18} />
                                         </button>
                                     </td>
@@ -149,17 +149,17 @@ const Materials = () => {
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-6">
-                    <div className="bg-[#160c2a]/95 border border-white/10 rounded-[40px] shadow-2xl max-w-lg w-full p-10 space-y-8">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 sm:p-6">
+                    <div className="bg-[#160c2a]/95 border border-white/10 rounded-3xl sm:rounded-[40px] shadow-2xl max-w-lg w-full p-6 sm:p-10 space-y-6 sm:space-y-8">
                         <div className="space-y-2">
-                            <h2 className="text-3xl font-bold text-white serif tracking-tight">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-white serif tracking-tight">
                                 {editingId ? 'Editar Material' : 'Nuevo Material'}
                             </h2>
                             <p className="text-gray-400 text-sm">Registra o actualiza la información básica de tu materia prima.</p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">Nombre</label>
                                     <input name="name" autoComplete="off" required value={formData.name} onChange={handleChange}
@@ -177,7 +177,7 @@ const Materials = () => {
                                     </select>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">Precio / Unidad (€)</label>
                                     <input type="number" step="0.01" name="price" required value={formData.price} onChange={handleChange}
