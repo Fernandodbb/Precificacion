@@ -56,7 +56,10 @@ const getFirstSheetName = async (sheets, spreadsheetId) => {
 
 const findUserByEmail = async (email) => {
     const sheets = await getSheetsService();
-    const sheetName = await getFirstSheetName(sheets, process.env.GOOGLE_SHEET_ID_USUARIOS);
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID_USUARIOS;
+    console.log(`Intentando conectar a la hoja de usuarios: ${spreadsheetId}`);
+
+    const sheetName = await getFirstSheetName(sheets, spreadsheetId);
 
     // Assume Sheet1 is the main list. We need to fetch all data.
     // Warning: For large datasets this is inefficient, but for a prototype it's fine.
