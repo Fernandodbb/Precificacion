@@ -1,11 +1,11 @@
 services:
   - type: web
     name: precificacion-api
-    runtime: node
+    env: node
+    plan: free
+    rootDir: server
     buildCommand: npm install
     startCommand: npm start
-    env: static
-    rootDir: server
     envVars:
       - key: PORT
         value: 10000
