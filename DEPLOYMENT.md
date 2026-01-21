@@ -12,8 +12,8 @@ Para poner tu aplicación "en internet" (Producción) y que puedas acceder desde
 
 ## ⚙️ Paso 2: Desplegar el Backend (Render)
 1.  Crea una cuenta en [Render.com](https://render.com).
-2.  Ve a **"Blueprints"** en el menú superior.
-3.  Haz clic en **"New Blueprint Instance"**.
+2.  Haz clic en el botón **"+ New"** (arriba a la derecha).
+3.  Selecciona la opción **"Blueprint"** en el menú desplegable.
 4.  Conecta tu repositorio de GitHub.
 5.  Render detectará automáticamente la configuración del archivo `render.yaml`.
 6.  **Environment Variables**:

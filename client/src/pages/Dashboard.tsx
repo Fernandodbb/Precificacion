@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../api/api';
-import { Package, Boxes, Receipt, TrendingUp } from 'lucide-react';
+import { Package, Receipt, TrendingUp } from 'lucide-react';
 
 const StatCard = ({ title, value, icon: Icon, color }: any) => (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4">

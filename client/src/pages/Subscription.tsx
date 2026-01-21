@@ -169,7 +169,7 @@ const PayPalPaymentSection = ({ billingCycle, onSuccess, onError, onConfigLoaded
             <div className="space-y-4">
                 <PayPalButtons
                     style={{ layout: "vertical" }}
-                    createOrder={async (data, actions) => {
+                    createOrder={async (_data, _actions) => {
                         try {
                             const response = await api.post('/api/payment/create-order', {
                                 plan: billingCycle
@@ -181,7 +181,7 @@ const PayPalPaymentSection = ({ billingCycle, onSuccess, onError, onConfigLoaded
                             throw err;
                         }
                     }}
-                    onApprove={async (data, actions) => {
+                    onApprove={async (data, _actions) => {
                         try {
                             const response = await api.post('/api/payment/capture-order', {
                                 orderID: data.orderID,
