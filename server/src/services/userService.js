@@ -7,6 +7,13 @@ const PRODUCTS_SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID_PRODUCTOS;
 const MATERIALS_SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID_MATERIAS;
 const ACCOUNTING_SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID_CONTABILIDAD;
 
+const cleanSheetId = (id) => {
+    if (!id) return id;
+    // Si es una URL, extraer la parte entre /d/ y /edit (o el final)
+    const match = id.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    return match ? match[1] : id.trim();
+};
+
 // Helper to create a new sheet for a user in a specific spreadsheet
 const createUserSheet = async (sheets, spreadsheetId, title) => {
     try {
@@ -56,7 +63,7 @@ const getFirstSheetName = async (sheets, spreadsheetId) => {
 
 const findUserByEmail = async (email) => {
     const sheets = await getSheetsService();
-    const spreadsheetId = process.env.GOOGLE_SHEET_ID_USUARIOS;
+    const spreadsheetId = cleanSheetId(process.env.GOOGLE_SHEET_ID_USUARIOS);
     console.log(`Intentando conectar a la hoja de usuarios: ${spreadsheetId}`);
 
     const sheetName = await getFirstSheetName(sheets, spreadsheetId);
@@ -64,7 +71,7 @@ const findUserByEmail = async (email) => {
     // Assume Sheet1 is the main list. We need to fetch all data.
     // Warning: For large datasets this is inefficient, but for a prototype it's fine.
     const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: process.env.GOOGLE_SHEET_ID_USUARIOS,
+        spreadsheetId: spreadsheetId,
         range: `${sheetName}!A:N`, // Columns A to N
     });
 
@@ -97,10 +104,11 @@ const findUserByEmail = async (email) => {
 
 const findUserById = async (id) => {
     const sheets = await getSheetsService();
-    const sheetName = await getFirstSheetName(sheets, process.env.GOOGLE_SHEET_ID_USUARIOS);
+    const spreadsheetId = cleanSheetId(process.env.GOOGLE_SHEET_ID_USUARIOS);
+    const sheetName = await getFirstSheetName(sheets, spreadsheetId);
 
     const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: process.env.GOOGLE_SHEET_ID_USUARIOS,
+        spreadsheetId: spreadsheetId,
         range: `${sheetName}!A:N`,
     });
 
@@ -155,23 +163,26 @@ const registerUser = async (userData) => {
     const sheetName = `Usuario_${userId}`;
 
     // Create in Products DB
-    await createUserSheet(sheets, process.env.GOOGLE_SHEET_ID_PRODUCTOS, sheetName);
-    await setupSheetHeaders(sheets, process.env.GOOGLE_SHEET_ID_PRODUCTOS, sheetName, [
+    const produtosId = cleanSheetId(process.env.GOOGLE_SHEET_ID_PRODUCTOS);
+    await createUserSheet(sheets, produtosId, sheetName);
+    await setupSheetHeaders(sheets, produtosId, sheetName, [
         'ID_Producto', 'Nombre_Producto', 'Descripción', 'Materias_Primas_Usadas',
         'Cantidades_Usadas', 'Coste_Total_Calculado', 'Margen_Beneficio_Porcentaje',
         'PVP_Calculado', 'Fecha_Creacion', 'Fecha_Actualizacion'
     ]);
 
     // Create in Materials DB
-    await createUserSheet(sheets, process.env.GOOGLE_SHEET_ID_MATERIAS, sheetName);
-    await setupSheetHeaders(sheets, process.env.GOOGLE_SHEET_ID_MATERIAS, sheetName, [
+    const materiasId = cleanSheetId(process.env.GOOGLE_SHEET_ID_MATERIAS);
+    await createUserSheet(sheets, materiasId, sheetName);
+    await setupSheetHeaders(sheets, materiasId, sheetName, [
         'ID_Materia_Prima', 'Nombre', 'Unidad_Medida', 'Precio_Por_Unidad',
         'Proveedor', 'Stock_Actual', 'Stock_Minimo', 'Fecha_Ultima_Compra', 'Notas'
     ]);
 
     // Create in Accounting DB
-    await createUserSheet(sheets, process.env.GOOGLE_SHEET_ID_CONTABILIDAD, sheetName);
-    await setupSheetHeaders(sheets, process.env.GOOGLE_SHEET_ID_CONTABILIDAD, sheetName, [
+    const accountingId = cleanSheetId(process.env.GOOGLE_SHEET_ID_CONTABILIDAD);
+    await createUserSheet(sheets, accountingId, sheetName);
+    await setupSheetHeaders(sheets, accountingId, sheetName, [
         'ID_Registro', 'Fecha', 'Concepto', 'Tipo', 'Categoria',
         'Producto_Relacionado_ID', 'Importe', 'Metodo_Pago', 'Notas', 'Factura_URL'
     ]);
@@ -183,11 +194,11 @@ const registerUser = async (userData) => {
         sheetName, sheetName, sheetName // Saving the Sheet Name as reference
     ];
 
-    // Get dynamic sheet name for append
-    const mainSheetName = await getFirstSheetName(sheets, process.env.GOOGLE_SHEET_ID_USUARIOS);
+    const spreadsheetId = cleanSheetId(process.env.GOOGLE_SHEET_ID_USUARIOS);
+    const mainSheetName = await getFirstSheetName(sheets, spreadsheetId);
 
     await sheets.spreadsheets.values.append({
-        spreadsheetId: process.env.GOOGLE_SHEET_ID_USUARIOS,
+        spreadsheetId: spreadsheetId,
         range: `${mainSheetName}!A:A`,
         valueInputOption: 'RAW',
         resource: { values: [newRow] }
@@ -200,10 +211,11 @@ const registerUser = async (userData) => {
 
 const updateUserStatus = async (id, status, endDate, billingCycle, amount) => {
     const sheets = await getSheetsService();
-    const sheetName = await getFirstSheetName(sheets, process.env.GOOGLE_SHEET_ID_USUARIOS);
+    const spreadsheetId = cleanSheetId(process.env.GOOGLE_SHEET_ID_USUARIOS);
+    const sheetName = await getFirstSheetName(sheets, spreadsheetId);
 
     const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: process.env.GOOGLE_SHEET_ID_USUARIOS,
+        spreadsheetId: spreadsheetId,
         range: `${sheetName}!A:N`, // Fetch including columns M and N
     });
 
@@ -254,7 +266,7 @@ const updateUserStatus = async (id, status, endDate, billingCycle, amount) => {
 
     for (const update of updates) {
         await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.GOOGLE_SHEET_ID_USUARIOS,
+            spreadsheetId: spreadsheetId,
             range: update.range,
             valueInputOption: 'RAW',
             resource: { values: update.values }
@@ -267,7 +279,7 @@ const updateUserStatus = async (id, status, endDate, billingCycle, amount) => {
 // Ensure SUSCRIPCION sheet exists and get config
 const getSubscriptionConfig = async () => {
     const sheets = await getSheetsService();
-    const spreadsheetId = process.env.GOOGLE_SHEET_ID_USUARIOS; // We'll use the USERS sheet to host this tab for simplicity, or we need a new ID. 
+    const spreadsheetId = cleanSheetId(process.env.GOOGLE_SHEET_ID_USUARIOS); // We'll use the USERS sheet to host this tab for simplicity, or we need a new ID. 
     // The user didn't provide a new ID, so adding a tab to an existing spreadsheet is safer.
     // Let's use USERS spreadsheet to hold this config tab.
 

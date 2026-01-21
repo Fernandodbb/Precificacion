@@ -59,7 +59,10 @@ const login = async (req, res) => {
         }
     } catch (error) {
         console.error('Login Error:', error);
-        res.status(500).json({ message: error.message || 'Server Error' });
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID_USUARIOS;
+        res.status(500).json({
+            message: `Error al acceder a Google Sheets (${spreadsheetId}): ${error.message}`
+        });
     }
 };
 
