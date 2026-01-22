@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/api';
 import { Plus, Edit, Trash2, AlertTriangle, Banknote } from 'lucide-react';
 
@@ -143,9 +144,9 @@ const Products = () => {
                 <p className="text-gray-500 max-w-md">
                     Para crear productos, primero necesitas registrar los ingredientes o materiales que utilizas.
                 </p>
-                <a href="/materials" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                <Link to="/materials" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
                     Ir a Materias Primas
-                </a>
+                </Link>
             </div>
         );
     }
